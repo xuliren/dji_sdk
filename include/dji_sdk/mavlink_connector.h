@@ -54,6 +54,10 @@ namespace mavlink_adapter
 
         mavlink_heartbeat_t * make_heartbeat();
 
+        void handle_missions(mavlink_message_t * msg);
+
+        int MISSION_REC_STATE = 0;
+
     public:
         mavlink_connector(std::string ip,int port);
 

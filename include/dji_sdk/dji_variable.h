@@ -11,7 +11,7 @@
 #include <dji_sdk/gimbal.h>
 #include <dji_sdk/rc_channels.h>
 #include <nav_msgs/Odometry.h>
-
+#include <dji_sdk/dji_waypoints.h>
 namespace dji_variable
 {
     extern dji_sdk::local_position local_position_ref;
@@ -28,6 +28,14 @@ namespace dji_variable
     extern uint8_t  flight_status;
     extern uint8_t ctrl_device;
     extern nav_msgs::Odometry odem;
+    void gps_convert_ned(float &ned_x, float &ned_y,
+                     double gps_t_lon,
+                     double gps_t_lat,
+                     double gps_r_lon,
+                     double gps_r_lat
+    );
+    void gps_convert_ned(dji_sdk::local_position & local,dji_sdk::global_position);
+    extern dji_waypoints wp_m;
 };
 
 #endif

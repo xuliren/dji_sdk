@@ -4,6 +4,7 @@
 #include <dji_sdk/mavlink_connector.h>
 #include <thread>
 #include <functional>
+#include <dji_sdk/dji_waypoints.h>
 
 //----------------------------------------------------------
 //table of sdk req data handler
@@ -219,25 +220,7 @@ void ros_activation_callback(const std_msgs::Float32::ConstPtr &msg)
     test_activation();
 }
 
-void gps_convert_ned(float &ned_x, float &ned_y,
-                     double gps_t_lon,
-                     double gps_t_lat,
-                     double gps_r_lon,
-                     double gps_r_lat
-)
-{
 
-    //TODO :
-    //fix bug with ellipsoid
-
-    double d_lon = gps_t_lon - gps_r_lon;
-    double d_lat = gps_t_lat - gps_r_lat;
-
-    ned_x = d_lat * C_EARTH;
-    ned_y = d_lon * C_EARTH * cos((gps_r_lat + gps_t_lat) / 2 * M_PI / 180.0f);
-
-    return;
-}
 using namespace dji_variable;
 void update_ros_vars()
 {
@@ -283,7 +266,7 @@ void update_ros_vars()
     acc.ay = recv_sdk_std_msgs.a.y;
     acc.az = recv_sdk_std_msgs.a.z;
 
-    gps_convert_ned(
+    dji_variable::gps_convert_ned(
             local_position.x,
             local_position.y,
             global_position.lon,
@@ -376,6 +359,7 @@ void spin_callback(const ros::TimerEvent &e)
         publishers::battery_pub.publish(msg);
 
 
+        /*
         ROS_INFO("STD_MSGS:");
         printf("[STD_MSGS] time_stamp %d \n", recv_sdk_std_msgs.time_stamp);
         printf("[STD_MSGS] q %f %f %f %f \n", recv_sdk_std_msgs.q.q0, recv_sdk_std_msgs.q.q1, recv_sdk_std_msgs.q.q2,
@@ -396,6 +380,7 @@ void spin_callback(const ros::TimerEvent &e)
         printf("[STD_MSGS] battery %d\n", recv_sdk_std_msgs.battery_remaining_capacity);
         printf("[STD_MSGS] ctrl_device %d\n", recv_sdk_std_msgs.ctrl_device);
         printf("[STD_MSGS] hacc %d\n", recv_sdk_std_msgs.hacc);
+         */
     }
 
     // test session ack for force close
@@ -430,7 +415,7 @@ void spin_callback(const ros::TimerEvent &e)
 int main(int argc, char **argv)
 {
 
-    printf("Test SDK Protocol demo\n");
+    printf("SDK Protocol\n");
     // initialize ros
     ros::init(argc, argv, "SDK_serial");
     ros::NodeHandle nh;
@@ -482,6 +467,7 @@ int main(int argc, char **argv)
     init_subscibers(nh);
 
 
+    wp_m.load("/Users/xuhao/data/wp.txt");
 
     // ros timer 50Hz
     simple_task_timer = nh.createTimer(ros::Duration(1.0 / 50.0), (const TimerCallback &) spin_callback);

@@ -28,23 +28,23 @@ namespace  publishers
     int init_publishers(ros::NodeHandle &nh)
     {
         // start ros publisher
-        publishers::battery_pub = nh.advertise<std_msgs::Float32>("/battery_status", 10);
-        publishers::nav_ctrl_status_pub = nh.advertise<std_msgs::Float32>("/nav_open_close_status", 10);
-        publishers::flight_status_pub = nh.advertise<std_msgs::Float32>("/flight_status", 10);
-        publishers::activation_status_pub = nh.advertise<std_msgs::Float32>("/activation_status", 10);
-        publishers::test_fre_pub = nh.advertise<std_msgs::Float32>("/test_fre", 10);
+        publishers::battery_pub = nh.advertise<std_msgs::Float32>("battery_status", 10);
+        publishers::nav_ctrl_status_pub = nh.advertise<std_msgs::Float32>("nav_open_close_status", 10);
+        publishers::flight_status_pub = nh.advertise<std_msgs::Float32>("flight_status", 10);
+        publishers::activation_status_pub = nh.advertise<std_msgs::Float32>("activation_status", 10);
+        publishers::test_fre_pub = nh.advertise<std_msgs::Float32>("test_fre", 10);
 
-        publishers::acc_pub = nh.advertise<dji_sdk::acc>("/acceleration", 10);
+        publishers::acc_pub = nh.advertise<dji_sdk::acc>("acceleration", 10);
 
         //extend pub
 
-        publishers::att_quad_pub = nh.advertise<dji_sdk::attitude_quad>("/attitude_quad", 10);
-        publishers::gps_pub = nh.advertise<dji_sdk::global_position>("/global_position", 10);
-        publishers::local_pos_pub = nh.advertise<dji_sdk::local_position>("/local_position", 10);
-        publishers::vel_pub = nh.advertise<dji_sdk::velocity>("/velocity", 10);
-        publishers::odem_publisher = nh.advertise<nav_msgs::Odometry>("/odem",10);
+        publishers::att_quad_pub = nh.advertise<dji_sdk::attitude_quad>("attitude_quad", 10);
+        publishers::gps_pub = nh.advertise<dji_sdk::global_position>("global_position", 10);
+        publishers::local_pos_pub = nh.advertise<dji_sdk::local_position>("local_position", 10);
+        publishers::vel_pub = nh.advertise<dji_sdk::velocity>("velocity", 10);
+        publishers::odem_publisher = nh.advertise<nav_msgs::Odometry>("odom",10);
 
-        rc_channels_pub = nh.advertise<dji_sdk::rc_channels>("/rc_channels",10);
+        rc_channels_pub = nh.advertise<dji_sdk::rc_channels>("rc_channels",10);
 
         return 0;
     }

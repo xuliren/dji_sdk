@@ -87,7 +87,8 @@ add_executable(dji_sdk_node src/dji_sdk_node.cpp
  src/modules/dji_mavlink_adapter.cpp
  src/modules/mavlink_connector.cpp
  src/modules/dji_commands.cpp
- )
+ src/modules/dji_waypoints.cpp
+ src/modules/dji_waypoints.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes

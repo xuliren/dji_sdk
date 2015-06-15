@@ -20,6 +20,9 @@
 #define FLIGHT_STATUS_LANDING 4
 #define FLIGHT_STATUS_POSTLANDING 5
 
+#define MISSION_REC_STANDBY 0
+
+#include <vector>
 
 namespace mavlink_adapter
 {
@@ -213,6 +216,10 @@ namespace mavlink_adapter
                 break;
             case MAVLINK_MSG_ID_COMMAND_LONG:
                 handle_command_long(msg);
+            case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
+            case MAVLINK_MSG_ID_MISSION_REQUEST:
+            case MAVLINK_MSG_ID_MISSION_COUNT:
+                handle_missions(msg);
             default:
                 printf("msg !!!!!!%d\n",msg->msgid);
         }
@@ -238,8 +245,54 @@ namespace mavlink_adapter
                 dji_commands::set_return2home();
                 printf("return to home\n");
                 break;
+        }
+    }
 
-
+    void mavlink_connector::handle_missions(mavlink_message_t *msg)
+    {
+        mavlink_message_t resp;
+        switch (msg->msgid)
+        {
+            case MAVLINK_MSG_ID_MISSION_REQUEST_LIST: {
+                mavlink_mission_count_t count;
+                count.count = dji_variable::wp_m.missions[0].size();
+                count.target_component = msg->compid;
+                count.target_system = msg->sysid;
+                mavlink_msg_mission_count_encode(0, 200, &resp, &count);
+                this->send_msg(&resp);
+                break;
+            }
+            case MAVLINK_MSG_ID_MISSION_REQUEST: {
+                mavlink_mission_request_t req;
+                mavlink_msg_mission_request_decode(msg, &req);
+                printf("ground is trying to request mission %d \n",req.seq);
+                std::vector<mavlink_mission_item_t> mission_msgs
+                        = dji_variable::wp_m.missions[0].to_mission_items();
+                mavlink_mission_item_t a = mission_msgs[req.seq];
+                a.target_system = msg->sysid;
+                a.target_component = msg->compid;
+                mavlink_msg_mission_item_encode(0,200, &resp, &a);
+                printf("we are now trying to give waypoint:%d\n",a.seq);
+                this->send_msg(&resp);
+                /*
+                for (mavlink_mission_item_t a:mission_msgs) {
+                    a.target_system = msg->sysid;
+                    a.target_component = msg->compid;
+                    mavlink_msg_mission_item_encode(0,200, &resp, &a);
+                    printf("we are now trying to give waypoint:%d\n",a.seq);
+                    this->send_msg(&resp);
+                }
+                 */
+                break;
+            }
+            case MAVLINK_MSG_ID_MISSION_COUNT: {
+                mavlink_mission_count_t mission_count_t;
+                mavlink_msg_mission_count_decode(msg, &mission_count_t);
+                printf("Ground is trying to set a waypoint long as %d\n", mission_count_t.count);
+                break;
+            };
+            default:
+                break;
         }
     }
 

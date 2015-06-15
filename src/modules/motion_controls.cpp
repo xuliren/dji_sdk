@@ -13,7 +13,7 @@ namespace motion_controls
                          bool use_height
     )
     {
-
+        //TODO: ALT and HEIGHT
         api_ctrl_without_sensor_data_t send_data = {0};
 
 
@@ -31,6 +31,15 @@ namespace motion_controls
         App_Send_Data(0, 0, MY_CTRL_CMD_SET, API_CTRL_REQUEST, (uint8_t *) &send_data, sizeof(send_data), NULL, 0, 0);
     }
 
+    void fly_to_globalpos(dji_sdk::global_position los,
+                          bool use_height
+    )
+    {
+        //TODO: ALT and HEIGHT
+        dji_sdk::local_position move ;
+        dji_variable::gps_convert_ned(move,los);
+        fly_to_localpos(move, false);
+    }
     void set_velocity(dji_sdk::velocity msg)
     {
 
