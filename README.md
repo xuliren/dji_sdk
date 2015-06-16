@@ -13,9 +13,11 @@ As for ros, I use services for control the aircraft, action to send mode cmd, an
 # MAVLINK
 I am developing a full mavlink-controlable DJI with this app, you can use qgroundcontrol with UDP to control the aircraft, support display location and attitude now for controling ,now only support takeoff and landing.
 
+Now support mavlink protcol of waypoints, you can simply use QGC for plan and flying.
+
 # Roadmap
 ## Waypoint
-Support QGroundControl style waypoint and guided mode.
+Fully support QGroundControl style waypoint and guided mode.
 
 ## MAVLINK
 Full support of common mavlink could control with QGC.
