@@ -34,7 +34,7 @@ namespace dji_variable
                      double gps_r_lon,
                      double gps_r_lat
     );
-    void gps_convert_ned(dji_sdk::local_position & local,dji_sdk::global_position);
+    dji_sdk::local_position gps_convert_ned(dji_sdk::global_position loc);
     extern dji_waypoints wp_m;
 };
 

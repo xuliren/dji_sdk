@@ -42,17 +42,19 @@ namespace dji_variable
         return;
     }
 
-    void gps_convert_ned(dji_sdk::local_position & local,dji_sdk::global_position)
+    dji_sdk::local_position gps_convert_ned(dji_sdk::global_position loc)
     {
+        dji_sdk::local_position local;
         gps_convert_ned(
           local.x,
           local.y,
-          global_position.lon,
-          global_position.lat,
+          loc.lon,
+          loc.lat,
           global_position_ref.lon,
           global_position_ref.lat
         );
         local.height = global_position.height;
+        return local;
     }
     dji_waypoints wp_m;
 };

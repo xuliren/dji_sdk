@@ -86,21 +86,28 @@ struct mission
         }
         return res;
     }
+    void clear()
+    {
+        this->waypoints.clear();
+    }
 };
 
 
 class dji_waypoints
 {
-    int status = 1,mission_id = -1,waypoint_ptr = -1;
     int switch_status(int status,int action);
     int state_machine[10][10] = {0};
 public:
+    int status = STATUS_STANDBY,mission_id = -1,waypoint_ptr = -1;
     std::vector<mission> missions;
+    //Mission always leave for mavlink waypoint protocol
+
     dji_waypoints(std::string path);
     dji_waypoints();
     int add_waypoints(mission mission1);
     int load(std::string file);
     int begin_fly_waypoints(int id);
+    int begin_fly_waypoints(int id,int ptr);
     int pause_flying();
     int cont_flying();
     int loop();

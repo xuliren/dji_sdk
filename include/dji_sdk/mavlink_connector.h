@@ -58,6 +58,9 @@ namespace mavlink_adapter
 
         int MISSION_REC_STATE = 0;
 
+        int waypoint_waitfor = 0;
+        int waypoint_length_size = 0;
+
     public:
         mavlink_connector(std::string ip,int port);
 

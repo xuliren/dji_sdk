@@ -35,6 +35,7 @@ namespace dji_commands
             printf("random_test Cmd result: %s \n", *(result + ack_data));
         }
         cmd_send_flag = 1;
+        dji_variable::wp_m.pause_flying();
     }
 
     void set_takeoff()
@@ -51,6 +52,7 @@ namespace dji_commands
         else {
 		printf("[CMD] wating! \n");
         }
+        dji_variable::wp_m.pause_flying();
     }
 
     void set_land()
@@ -67,6 +69,7 @@ namespace dji_commands
         else {
 		printf("[CMD] wating! \n");
         }
+        dji_variable::wp_m.pause_flying();
     }
 
     void set_loiter()
@@ -83,6 +86,7 @@ namespace dji_commands
         else {
 		printf("[CMD] wating! \n");
         }
+        dji_variable::wp_m.pause_flying();
     }
 
     void set_return2home()
@@ -99,5 +103,6 @@ namespace dji_commands
         else {
             printf("[CMD] wating! \n");
         }
+        dji_variable::wp_m.pause_flying();
     }
 }

@@ -21,6 +21,7 @@
 #define FLIGHT_STATUS_POSTLANDING 5
 
 #define MISSION_REC_STANDBY 0
+#define MISSION_REC_WAIT_FOR 1
 
 #include <vector>
 
@@ -212,13 +213,15 @@ namespace mavlink_adapter
         switch (msg->msgid)
         {
             case MAVLINK_MSG_ID_HEARTBEAT:
-                printf("I can hear you heart\n");
+//                printf("I can hear you heart\n");
                 break;
             case MAVLINK_MSG_ID_COMMAND_LONG:
                 handle_command_long(msg);
             case MAVLINK_MSG_ID_MISSION_REQUEST_LIST:
             case MAVLINK_MSG_ID_MISSION_REQUEST:
             case MAVLINK_MSG_ID_MISSION_COUNT:
+            case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
+            case MAVLINK_MSG_ID_MISSION_ITEM:
                 handle_missions(msg);
             default:
                 printf("msg !!!!!!%d\n",msg->msgid);
@@ -245,6 +248,8 @@ namespace mavlink_adapter
                 dji_commands::set_return2home();
                 printf("return to home\n");
                 break;
+            default:
+                printf("cmd is %d\n",cmd.command);
         }
     }
 
@@ -265,32 +270,101 @@ namespace mavlink_adapter
             case MAVLINK_MSG_ID_MISSION_REQUEST: {
                 mavlink_mission_request_t req;
                 mavlink_msg_mission_request_decode(msg, &req);
-                printf("ground is trying to request mission %d \n",req.seq);
+//                printf("ground is trying to request mission %d \n",req.seq);
                 std::vector<mavlink_mission_item_t> mission_msgs
                         = dji_variable::wp_m.missions[0].to_mission_items();
                 mavlink_mission_item_t a = mission_msgs[req.seq];
                 a.target_system = msg->sysid;
                 a.target_component = msg->compid;
+                a.current =  (a.seq == dji_variable::wp_m.waypoint_ptr && dji_variable::wp_m.mission_id == 0)? 1:0;
                 mavlink_msg_mission_item_encode(0,200, &resp, &a);
-                printf("we are now trying to give waypoint:%d\n",a.seq);
                 this->send_msg(&resp);
-                /*
-                for (mavlink_mission_item_t a:mission_msgs) {
-                    a.target_system = msg->sysid;
-                    a.target_component = msg->compid;
-                    mavlink_msg_mission_item_encode(0,200, &resp, &a);
-                    printf("we are now trying to give waypoint:%d\n",a.seq);
-                    this->send_msg(&resp);
-                }
-                 */
+
                 break;
             }
             case MAVLINK_MSG_ID_MISSION_COUNT: {
                 mavlink_mission_count_t mission_count_t;
                 mavlink_msg_mission_count_decode(msg, &mission_count_t);
-                printf("Ground is trying to set a waypoint long as %d\n", mission_count_t.count);
-                break;
+                if (MISSION_REC_STATE == MISSION_REC_STANDBY) {
+                    printf("Ground is trying to set a waypoint long as %d\n", mission_count_t.count);
+                    waypoint_length_size = mission_count_t.count;
+                    waypoint_waitfor = 0;
+                    dji_variable::wp_m.missions[0].clear();
+                    MISSION_REC_STATE = MISSION_REC_WAIT_FOR;
+                    mavlink_mission_request_t request_t;
+                    request_t.target_component = msg->compid;
+                    request_t.target_system = msg->sysid;
+                    request_t.seq = 0;
+                    mavlink_msg_mission_request_encode(0,200,&resp,&request_t);
+                    this->send_msg(&resp);
+                    break;
+                }
             };
+            case MAVLINK_MSG_ID_MISSION_ITEM:
+            {
+                if (MISSION_REC_STATE != MISSION_REC_WAIT_FOR)
+                    break;
+                mavlink_mission_item_t mission_item_t;
+                mavlink_msg_mission_item_decode(msg,&mission_item_t);
+                printf("seq:%d %f %f\n",mission_item_t.seq,mission_item_t.x,mission_item_t.y);
+                dji_sdk::global_position wp;
+                wp.lat = mission_item_t.x /180 * M_PI;
+                wp.lon = mission_item_t.y /180 * M_PI;
+                wp.alti = mission_item_t.z;
+//                wp.uncertain = mission_item_t.
+                wp.uncertain = 10 ;
+
+                mavlink_mission_request_t request_t;
+                request_t.target_component = msg->compid;
+                request_t.target_system = msg->sysid;
+
+                if (mission_item_t.seq == waypoint_waitfor)
+                {
+                    waypoint_waitfor ++;
+                    request_t.seq = waypoint_waitfor;
+                    dji_variable::wp_m.missions[0].waypoints.push_back(wp);
+                    if (request_t.seq < waypoint_length_size) {
+                        mavlink_msg_mission_request_encode(0, 200, &resp, &request_t);
+                        this->send_msg(&resp);
+                    }
+                    else{
+                        std::cout << dji_variable::wp_m.missions[0];
+                        waypoint_waitfor = 0;
+                        waypoint_length_size = 0;
+                        MISSION_REC_STATE = MISSION_REC_STANDBY;
+                        mavlink_mission_ack_t ack_t;
+                        ack_t.target_component = msg->compid;
+                        ack_t.target_system = msg->sysid;
+                        ack_t.type = MAV_MISSION_RESULT::MAV_MISSION_ACCEPTED;
+                        mavlink_msg_mission_ack_encode(0,200,&resp,&ack_t);
+                        this->send_msg(&resp);
+                    }
+                }
+                else{
+                    request_t.seq = waypoint_waitfor;
+                    mavlink_msg_mission_request_encode(0, 200, &resp, &request_t);
+                    this->send_msg(&resp);
+                }
+                break;
+
+            };
+            case MAVLINK_MSG_ID_MISSION_SET_CURRENT:
+            {
+                mavlink_mission_set_current_t  set_current_t;
+                mavlink_msg_mission_set_current_decode(msg,&set_current_t);
+                int ptr = set_current_t.seq;
+                printf("say system is trying to set current %d \n",ptr);
+                dji_variable::wp_m.mission_id = 0;
+                dji_variable::wp_m.waypoint_ptr = ptr;
+                dji_variable::wp_m.begin_fly_waypoints(0,ptr);
+                mavlink_mission_ack_t ack_t;
+                ack_t.target_component = msg->compid;
+                ack_t.target_system = msg->sysid;
+                ack_t.type = MAV_MISSION_RESULT::MAV_MISSION_ACCEPTED;
+                mavlink_msg_mission_ack_encode(0,200,&resp,&ack_t);
+                this->send_msg(&resp);
+            };
+
             default:
                 break;
         }

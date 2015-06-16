@@ -12,11 +12,13 @@ using namespace std;
 
 dji_waypoints::dji_waypoints(std::string path)
 {
+    init_state_machine();
     this->load(path);
 }
 
 dji_waypoints::dji_waypoints()
 {
+    init_state_machine();
     mission mission1;
     this->missions.push_back(mission1);
 }
@@ -43,12 +45,11 @@ int dji_waypoints::add_waypoints(mission mission1)
     missions.push_back(mission1);
     return (int)(missions.size()-1);
 
-    init_state_machine();
 }
 
 int dji_waypoints::begin_fly_waypoints(int id)
 {
-    int status = switch_status(status,ACTION_START_MISSION);
+    int status = switch_status(this->status,ACTION_START_MISSION);
     if (status == 0 || id >= missions.size() || id < 0)
     {
         return 0;
@@ -61,9 +62,24 @@ int dji_waypoints::begin_fly_waypoints(int id)
 }
 
 
+int dji_waypoints::begin_fly_waypoints(int id,int ptr)
+{
+     int status = switch_status(this->status,ACTION_START_MISSION);
+    if (status == 0 || id >= missions.size() || id < 0)
+    {
+        return 0;
+    }
+
+    mission_id = id;
+    waypoint_ptr = ptr;
+    this->status = status;
+    printf("will begin at %d %d\n",id,ptr);
+    return 1;
+}
+
 int dji_waypoints::pause_flying()
 {
-    int status = switch_status(status,ACTION_PAUSE_MISSION);
+    int status = switch_status(this->status,ACTION_PAUSE_MISSION);
     if (status == 0)
     {
         return 0;
@@ -75,7 +91,7 @@ int dji_waypoints::pause_flying()
 int dji_waypoints::cont_flying()
 {
 
-    int status = switch_status(status,ACTION_CONT_MISSION);
+    int status = switch_status(this->status,ACTION_CONT_MISSION);
     if (status == 0)
     {
         return 0;
@@ -102,6 +118,7 @@ int dji_waypoints::loop()
 
 int dji_waypoints::continue_mission()
 {
+//    printf("continue mission...\d");
     auto wp = missions[mission_id][waypoint_ptr];
     if (approach(wp , dji_variable::global_position ,wp.uncertain  ))
     {
@@ -123,8 +140,8 @@ int dji_waypoints::continue_mission()
 bool dji_waypoints::approach(dji_sdk::global_position wp1, dji_sdk::global_position wp2,float uncertain)
 {
     dji_sdk::local_position local_position1,local_position2;
-    dji_variable::gps_convert_ned(local_position1,wp1);
-    dji_variable::gps_convert_ned(local_position2,wp2);
+    local_position1 = dji_variable::gps_convert_ned(wp1);
+    local_position2 = dji_variable::gps_convert_ned(wp2);
     local_position1.height = wp1.alti;
     local_position2.height = wp2.alti;
     float raduis =

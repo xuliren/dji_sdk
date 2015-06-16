@@ -6,6 +6,7 @@
 #include <sdk_lib/sdk_lib.h>
 #include <dji_sdk/dji_variable.h>
 #include <dji_sdk/dji_gimbal.h>
+#include <sdk_lib/DJI_Pro_App.h>
 
 namespace motion_controls
 {
@@ -23,10 +24,11 @@ namespace motion_controls
         send_data.thr_z = los.height; //m/s
         send_data.yaw = gimbal::gimbal_yaw_control_sp;
 
-//        printf("%f %f \n",
-//               los.x - dji_variable::local_position_ref.x,
-//               los.x - dji_variable::local_position_ref.x
-//        );
+        printf("%f %f %f \n",
+               los.x - dji_variable::local_position_ref.x,
+               los.y - dji_variable::local_position_ref.y,
+               los.height
+        );
 
         App_Send_Data(0, 0, MY_CTRL_CMD_SET, API_CTRL_REQUEST, (uint8_t *) &send_data, sizeof(send_data), NULL, 0, 0);
     }
@@ -37,7 +39,11 @@ namespace motion_controls
     {
         //TODO: ALT and HEIGHT
         dji_sdk::local_position move ;
-        dji_variable::gps_convert_ned(move,los);
+        printf("los %f %f %f\n",los.lon,los.lat,los.height);
+        printf("reflos %f %f %f\n",dji_variable::global_position_ref.lon,dji_variable::global_position_ref.lat,los.height);
+        move = dji_variable::gps_convert_ned(los);
+        move.height = los.alti - dji_variable::global_position_ref.alti;
+        printf("move %f %f %f\n",move.x,move.y,move.height);
         fly_to_localpos(move, false);
     }
     void set_velocity(dji_sdk::velocity msg)

@@ -344,8 +344,8 @@ void spin_callback(const ros::TimerEvent &e)
 {
 
     update_ros_vars();
-
     mavlink_adapter::loop_callback(recv_sdk_std_msgs.time_stamp);
+    dji_variable::wp_m.loop();
 
     static unsigned int count = 0;
     count++;
@@ -421,7 +421,7 @@ int main(int argc, char **argv)
     ros::NodeHandle nh;
     ros::NodeHandle nh_private("~");
 
-    nh_private.param("serial_name", serial_name, std::string("/dev/ttySAC0"));    // /dev/ttySAC0 or /dev/ttyUSB0
+    nh_private.param("serial_name", serial_name, std::string("/dev/cu.SLAB_USBtoUART"));    // /dev/ttySAC0 or /dev/ttyUSB0
     nh_private.param("baud_rate", baud_rate, 230400);
 
     nh_private.param("app_id", app_id, 10086);
