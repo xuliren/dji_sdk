@@ -96,7 +96,7 @@ struct mission
 class dji_waypoints
 {
     int switch_status(int status,int action);
-    int state_machine[10][10] = {{0};
+    int state_machine[10][10] = {{0}};
 public:
     int status = STATUS_STANDBY,mission_id = -1,waypoint_ptr = -1;
     std::vector<mission> missions;
