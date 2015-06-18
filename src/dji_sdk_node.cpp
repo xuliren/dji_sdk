@@ -477,6 +477,8 @@ int main(int argc, char **argv)
     App_Recv_Set_Hook(App_Recv_Req_Data);
     App_Set_Table(set_handler_tab, cmd_handler_tab);
 
+    test_activation();
+
     CmdStartThread();
 
     Pro_Config_Comm_Encrypt_Key(key);
