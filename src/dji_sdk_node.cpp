@@ -359,7 +359,6 @@ void spin_callback(const ros::TimerEvent &e)
         publishers::battery_pub.publish(msg);
 
 
-        /*
         ROS_INFO("STD_MSGS:");
         printf("[STD_MSGS] time_stamp %d \n", recv_sdk_std_msgs.time_stamp);
         printf("[STD_MSGS] q %f %f %f %f \n", recv_sdk_std_msgs.q.q0, recv_sdk_std_msgs.q.q1, recv_sdk_std_msgs.q.q2,
@@ -380,7 +379,6 @@ void spin_callback(const ros::TimerEvent &e)
         printf("[STD_MSGS] battery %d\n", recv_sdk_std_msgs.battery_remaining_capacity);
         printf("[STD_MSGS] ctrl_device %d\n", recv_sdk_std_msgs.ctrl_device);
         printf("[STD_MSGS] hacc %d\n", recv_sdk_std_msgs.hacc);
-         */
     }
 
     // test session ack for force close
