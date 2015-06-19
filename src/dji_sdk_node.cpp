@@ -200,7 +200,7 @@ void try_to_open_control()
 void sdk_ack_nav_open_close_callback(ProHeader *header)
 {
     uint16_t ack_data;
-    printf("call %s\n", __func__);
+//    printf("call %s\n", __func__);
 //	printf("Recv ACK,sequence_number=%d,session_id=%d,data_len=%d\n", header->sequence_number, header->session_id, header->length - EXC_DATA_SIZE);
     memcpy((uint8_t *) &ack_data, (uint8_t *) &header->magic, (header->length - EXC_DATA_SIZE));
 

@@ -39,11 +39,11 @@ namespace motion_controls
     {
         //TODO: ALT and HEIGHT
         dji_sdk::local_position move ;
-        printf("los %f %f %f\n",los.lon,los.lat,los.height);
-        printf("reflos %f %f %f\n",dji_variable::global_position_ref.lon,dji_variable::global_position_ref.lat,los.height);
+//        printf("los %f %f %f\n",los.lon,los.lat,los.height);
+//        printf("reflos %f %f %f\n",dji_variable::global_position_ref.lon,dji_variable::global_position_ref.lat,los.height);
         move = dji_variable::gps_convert_ned(los);
         move.height = los.alti - dji_variable::global_position_ref.alti;
-        printf("move %f %f %f\n",move.x,move.y,move.height);
+//        printf("move %f %f %f\n",move.x,move.y,move.height);
         fly_to_localpos(move, false);
     }
     void set_velocity(dji_sdk::velocity msg)

@@ -43,7 +43,7 @@ void Pro_Link_Recv_Hook(ProHeader *header)
 	{
 		if(header->session_id == 1)
 		{
-			printf("%s:Recv Session 1 ACK\n",__func__);
+//			printf("%s:Recv Session 1 ACK\n",__func__);
 			if(Send_Session_Common_Tab.usage_flag == 1 &&
 					Send_Session_Common_Tab.ack_callback)
 			{
@@ -61,7 +61,7 @@ void Pro_Link_Recv_Hook(ProHeader *header)
 					if(p2header->session_id == header->session_id &&
 							p2header->sequence_number == header->sequence_number)
 					{
-						printf("%s:Recv Session %d ACK\n",__func__,p2header->session_id);
+//						printf("%s:Recv Session %d ACK\n",__func__,p2header->session_id);
 						Send_Session_Tab[i].ack_callback(header);
 						Free_Send_Session(&Send_Session_Tab[i]);
 						break;
