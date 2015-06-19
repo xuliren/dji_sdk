@@ -6,6 +6,8 @@
 #include <functional>
 #include <dji_sdk/dji_waypoints.h>
 
+#define ROS_LOG_DETAILS 0
+
 //----------------------------------------------------------
 //table of sdk req data handler
 //----------------------------------------------------------
@@ -186,6 +188,15 @@ void ros_cmd_data_callback(const std_msgs::Float32::ConstPtr &msg)
     }
 }
 
+void sdk_ack_nav_open_close_callback(ProHeader *header);
+
+void try_to_open_control()
+{
+    uint8_t send_data = (uint8_t) 1;
+    App_Send_Data(1, 1, MY_CTRL_CMD_SET, API_OPEN_SERIAL, (uint8_t *) &send_data, sizeof(send_data),
+                  sdk_ack_nav_open_close_callback, 1000, 0);
+}
+
 void sdk_ack_nav_open_close_callback(ProHeader *header)
 {
     uint16_t ack_data;
@@ -195,16 +206,27 @@ void sdk_ack_nav_open_close_callback(ProHeader *header)
 
     std_msgs::Float32 msg;
     if (is_sys_error(ack_data)) {
-        printf("[DEBUG] SDK_SYS_ERROR!!! \n");
+//        printf("[DEBUG] SDK_SYS_ERROR!!! \n");
+        try_to_open_control();
         msg.data = NO_AUTHORITY;
         publishers::activation_status_pub.publish(msg);
     }
     else {
         msg.data = (float) ack_data;
-        publishers::nav_ctrl_status_pub.publish(msg);
+        if (msg.data == 2)
+        {
+            usleep(100000);
+//            printf("opened!!!\n");
+            try_to_open_control();
+        }
+        else {
+            usleep(100000);
+            publishers::nav_ctrl_status_pub.publish(msg);
+//            printf("closed!!! Retry\n");
+            try_to_open_control();
+        }
     }
 }
-
 void ros_nav_open_close_callback(const std_msgs::Float32::ConstPtr &msg)
 {
     uint8_t send_data = (uint8_t) msg->data;
@@ -358,7 +380,7 @@ void spin_callback(const ros::TimerEvent &e)
         msg.data = (float) recv_sdk_std_msgs.battery_remaining_capacity;
         publishers::battery_pub.publish(msg);
 
-
+#ifdef ROS_LOG_DETAILS
         ROS_INFO("STD_MSGS:");
         printf("[STD_MSGS] time_stamp %d \n", recv_sdk_std_msgs.time_stamp);
         printf("[STD_MSGS] q %f %f %f %f \n", recv_sdk_std_msgs.q.q0, recv_sdk_std_msgs.q.q1, recv_sdk_std_msgs.q.q2,
@@ -379,6 +401,7 @@ void spin_callback(const ros::TimerEvent &e)
         printf("[STD_MSGS] battery %d\n", recv_sdk_std_msgs.battery_remaining_capacity);
         printf("[STD_MSGS] ctrl_device %d\n", recv_sdk_std_msgs.ctrl_device);
         printf("[STD_MSGS] hacc %d\n", recv_sdk_std_msgs.hacc);
+#endif
     }
 
     // test session ack for force close
@@ -475,12 +498,15 @@ int main(int argc, char **argv)
     App_Recv_Set_Hook(App_Recv_Req_Data);
     App_Set_Table(set_handler_tab, cmd_handler_tab);
 
-    test_activation();
 
     CmdStartThread();
 
     Pro_Config_Comm_Encrypt_Key(key);
     // ros spin for timer
+
+    test_activation();
+    try_to_open_control();
+
     ros::spin();
 
     return 0;
