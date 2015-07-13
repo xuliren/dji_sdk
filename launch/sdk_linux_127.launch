@@ -1,0 +1,14 @@
+<launch>
+	<node pkg="dji_sdk" type="dji_sdk_node" name="dji_sdk_node" output="screen">
+		<!-- node parameters -->
+		<param name="serial_name" type="string" value="/dev/ttyUSB0"/>
+		<param name="baud_rate" type="int" value="230400"/>
+		<param name="app_id" type="int" value="1009422"/>
+		<param name="app_api_level" type="int" value="2"/>
+		<param name="app_version" type="int" value="1"/>
+		<param name="app_bundle_id" type="string" value="fuck-dji-sdk"/>
+		<param name="enc_key" type="string" value="94748591b7977c1aacb1d21f84befd0438781d4d73b322db2d6f4aff66627cfd"/>
+		<param name="mavlink_ip" type = "string" value = "127.0.0.1" />
+		<param name="mavlink_port" type = "int" value = "14550" />
+	</node>
+</launch>
