@@ -56,7 +56,7 @@ std::string	serial_name;
 int		baud_rate;
 
 int		app_id;
-int		app_sdk_level;
+int app_api_level;
 int		app_version;
 std::string	app_bundle_id;
 

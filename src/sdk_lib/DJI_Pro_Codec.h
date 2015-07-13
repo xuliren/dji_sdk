@@ -1,5 +1,5 @@
-#ifndef __DJI_SDK_COMM_H__
-#define __DJI_SDK_COMM_H__
+#ifndef __DJI_PRO_CODEC_H__
+#define __DJI_PRO_CODEC_H__
 
 #include <stdint.h>
 #include <stdlib.h>

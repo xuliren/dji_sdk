@@ -95,8 +95,6 @@ typedef struct ProAckParameter
 
 unsigned int Get_TimeStamp(void);
 void Pro_Link_Setup(void);
-int Start_PullThread(void);
-void Send_Pull(void);
 
 Session_Queue * Request_Send_Session(unsigned short size);
 void Free_Send_Session(Session_Queue * session);
