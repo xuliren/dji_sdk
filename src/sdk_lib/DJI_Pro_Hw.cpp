@@ -5,13 +5,16 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include<sys/ioctl.h>
+#include <sys/ioctl.h>
+
+#include <errno.h>
+#include <string.h>
 
 #include <termios.h>
 #include <string.h>
 #include <pthread.h>
 
-#include "sdk_comm.h"
+#include "DJI_Pro_Codec.h"
 
 static int serial_fd = -1;
 static fd_set serial_fd_set;
@@ -22,6 +25,8 @@ int SerialOpen(const char *port_str)
 	if(serial_fd < 0)
 	{
 		printf("%s,%d:ERROR\n",__func__,__LINE__);
+		printf("\x1b[31m" "Fail when setup serial. Error msg:");
+		printf(" ERRNO[%d]: %s\n" "\x1b[0m",errno, strerror(errno));
 		return -1;
 	}
 	return 0;
@@ -57,14 +62,10 @@ int SerialConfig(int baudrate,char data_bits,char parity_bits,char stop_bits)
 		B38400,
 		B57600,
 		B115200,
-		B230400
-		/*
-		 * TODO:FIX for all platform
-		 * ,
+		B230400,
 		B1000000,
 		B1152000,
 		B3000000,
-             */
 	};
 	int std_rate[]=
 	{
@@ -163,9 +164,9 @@ int SerialConfig(int baudrate,char data_bits,char parity_bits,char stop_bits)
     return 0;
 }
 
-static int SerialStart(char *dev_name,int baud_rate)
+static int SerialStart(const char *dev_name,int baud_rate)
 {
-	char *ptemp;
+	const char *ptemp;
 	if(dev_name == NULL)
 	{
 		ptemp = "/dev/ttyUSB0";
@@ -217,9 +218,9 @@ static int SerialRead(unsigned char *buf,int len)
 static void * SerialRecvThread(void * arg)
 {
 	int ret;
-	int depth;
+	unsigned int depth,len;
 	unsigned char buf[64];
-	int i,len;
+	int i;
 	while(1)
 	{
         ret = select(FD_SETSIZE, &serial_fd_set, (fd_set *)0, (fd_set *)0,(struct timeval *) 0);
@@ -269,7 +270,7 @@ int Pro_Hw_Recv(unsigned char *buf, int len)
 	return SerialRead(buf,len);
 }
 
-int Pro_Hw_Setup(char *device,int baudrate)
+int Pro_Hw_Setup(const char *device,int baudrate)
 {
 	if(SerialStart(device,baudrate) < 0)
 	{
