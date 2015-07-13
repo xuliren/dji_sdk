@@ -21,6 +21,8 @@ namespace dji_variable
     uint8_t flight_status;
     uint8_t ctrl_device;
     float battery = 0;
+    bool opened = false;
+    bool activated = false;
 
     void gps_convert_ned(float &ned_x, float &ned_y,
                          double gps_t_lon,

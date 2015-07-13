@@ -28,6 +28,8 @@ namespace dji_variable
     extern uint8_t  flight_status;
     extern uint8_t ctrl_device;
     extern nav_msgs::Odometry odem;
+    extern bool opened ;
+    extern bool activated;
     void gps_convert_ned(float &ned_x, float &ned_y,
                      double gps_t_lon,
                      double gps_t_lat,

@@ -6,7 +6,7 @@
 #include <functional>
 #include <dji_sdk/dji_waypoints.h>
 
-#define ROS_LOG_DETAILS 0
+//#define ROS_LOG_DETAILS 0
 
 //----------------------------------------------------------
 //table of sdk req data handler
@@ -98,7 +98,7 @@ void test_activation_ack_cmd_callback(ProHeader *header)
     memcpy((uint8_t *) &ack_data, (uint8_t *) &header->magic, (header->length - EXC_DATA_SIZE));
 
     if (is_sys_error(ack_data)) {
-        printf("[DEBUG] SDK_SYS_ERROR!!! \n");
+        printf("[DEBUG] SDK_SYS_ERROR!!! ACTIVATION\n");
         std_msgs::Float32 msg;
         msg.data = NO_AUTHORITY;
         publishers::activation_status_pub.publish(msg);
@@ -113,6 +113,11 @@ void test_activation_ack_cmd_callback(ProHeader *header)
                              {"SERVER_REFUSED"},
                              {"LEVEL_ERROR"}};
         printf("[ACTIVATION] Activation result: %s \n", *(result + ack_data));
+        if (ack_data == 0)
+            dji_variable::activated = true;
+        else {
+            dji_variable::activated = false;
+        }
         std_msgs::Float32 msg;
         msg.data = (float) ack_data;
         publishers::activation_status_pub.publish(msg);
@@ -132,6 +137,7 @@ void test_activation(void)
 //	msg.app_bundle_id[0]	= 4;
     App_Send_Data(2, 0, MY_ACTIVATION_SET, API_USER_ACTIVATION, (uint8_t *) &activation_msg, sizeof(activation_msg),
                   test_activation_ack_cmd_callback, 1000, 1);
+
     printf("[ACTIVATION] send acticition msg: %d %d %d %d \n", activation_msg.app_id, activation_msg.app_api_level,
            activation_msg.app_ver, activation_msg.app_bundle_id[0]);
 }
@@ -192,6 +198,8 @@ void sdk_ack_nav_open_close_callback(ProHeader *header);
 
 void try_to_open_control()
 {
+//    if (dji_variable::)
+    printf("send open......\n");
     uint8_t send_data = (uint8_t) 1;
     App_Send_Data(1, 1, MY_CTRL_CMD_SET, API_OPEN_SERIAL, (uint8_t *) &send_data, sizeof(send_data),
                   sdk_ack_nav_open_close_callback, 1000, 0);
@@ -200,27 +208,27 @@ void try_to_open_control()
 void sdk_ack_nav_open_close_callback(ProHeader *header)
 {
     uint16_t ack_data;
-//    printf("call %s\n", __func__);
-//	printf("Recv ACK,sequence_number=%d,session_id=%d,data_len=%d\n", header->sequence_number, header->session_id, header->length - EXC_DATA_SIZE);
     memcpy((uint8_t *) &ack_data, (uint8_t *) &header->magic, (header->length - EXC_DATA_SIZE));
 
     std_msgs::Float32 msg;
     if (is_sys_error(ack_data)) {
-        printf("[DEBUG] SDK_SYS_ERROR!!! \n");
+        printf("[DEBUG] SDK_SYS_ERROR!!! OPEN :%d \n" , dji_variable::opened);
         try_to_open_control();
         msg.data = NO_AUTHORITY;
-        publishers::activation_status_pub.publish(msg);
+        publishers::nav_ctrl_status_pub.publish(msg);
     }
     else {
         msg.data = (float) ack_data;
         if (msg.data == 2)
         {
             printf("opened!!!\n");
+            dji_variable::opened = true;
             usleep(100000);
 
             try_to_open_control();
         }
         else {
+            dji_variable::opened = false;
             printf("closed!!! Retry\n");
             usleep(100000);
             publishers::nav_ctrl_status_pub.publish(msg);
@@ -401,6 +409,7 @@ void spin_callback(const ros::TimerEvent &e)
         printf("[STD_MSGS] status %d\n", recv_sdk_std_msgs.status);
         printf("[STD_MSGS] battery %d\n", recv_sdk_std_msgs.battery_remaining_capacity);
         printf("[STD_MSGS] ctrl_device %d\n", recv_sdk_std_msgs.ctrl_device);
+
 //        printf("[STD_MSGS] hacc %d\n", recv_sdk_std_msgs.hacc);
 #endif
     }
