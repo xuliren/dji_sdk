@@ -13,7 +13,10 @@
 #include <nav_msgs/Odometry.h>
 #include <dji_sdk/dji_waypoints.h>
 namespace dji_variable
-{
+{   
+    extern bool flag_visit;
+    extern bool flag_success;
+    extern bool flag_open_or_close;
     extern dji_sdk::local_position local_position_ref;
     extern dji_sdk::global_position global_position_ref;
     extern bool localposbase_use_height;

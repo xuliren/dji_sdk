@@ -7,6 +7,8 @@
 
 #include "dji_variable.h"
 #include <ros/ros.h>
+#include <dji_sdk/dji_act_open.h>
+#include <dji_sdk/pre_act.h>
 
 namespace service_handles
 {

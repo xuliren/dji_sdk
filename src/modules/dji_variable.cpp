@@ -23,6 +23,9 @@ namespace dji_variable
     float battery = 0;
     bool opened = false;
     bool activated = false;
+    bool flag_visit = false;
+    bool flag_success = false;
+    bool flag_open_or_close = true;
 
     void gps_convert_ned(float &ned_x, float &ned_y,
                          double gps_t_lon,
