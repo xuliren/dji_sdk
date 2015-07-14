@@ -5,8 +5,12 @@
 #include <thread>
 #include <functional>
 #include <dji_sdk/dji_waypoints.h>
+#include <dji_sdk/app_act.h>
 
 //#define ROS_LOG_DETAILS 0
+
+char *key = NULL;
+activation_data_t activation_msg = {14,2,1,0};
 
 //----------------------------------------------------------
 //table of sdk req data handler
@@ -445,7 +449,6 @@ void spin_callback(const ros::TimerEvent &e)
 //----------------------------------------------------------
 int main(int argc, char **argv)
 {
-
     printf("SDK Protocol\n");
     // initialize ros
     ros::init(argc, argv, "SDK_serial");
@@ -514,8 +517,8 @@ int main(int argc, char **argv)
     Pro_Config_Comm_Encrypt_Key(key);
     // ros spin for timer
 
-    test_activation();
-    try_to_open_control();
+ //   test_activation();
+ //   try_to_open_control();
 
     ros::spin();
 

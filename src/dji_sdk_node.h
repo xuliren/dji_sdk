@@ -42,27 +42,26 @@ void update_ros_vars();
 
 
 // ros timer
-ros::Timer simple_task_timer;
+static ros::Timer simple_task_timer;
 
 // enc_key
-static char *key;
+extern char *key;
 // req_id for nav closed by app msg
 static req_id_t nav_force_close_req_id = {0};
 // std msg from uav
 static sdk_std_msg_t recv_sdk_std_msgs = {0};
 
 // ros launch param
-std::string	serial_name;
-int		baud_rate;
+static std::string	serial_name;
+static int		baud_rate;
+static int		app_id;
+static int 		app_api_level;
+static int		app_version;
+static std::string	app_bundle_id;
 
-int		app_id;
-int app_api_level;
-int		app_version;
-std::string	app_bundle_id;
-
-std::string     enc_key;
+static std::string     enc_key;
 // activation
 //static activation_data_t activation_msg = {14,2,1,""};
-static activation_data_t activation_msg = {14,2,1,0};
+extern activation_data_t activation_msg;
 
 #endif
