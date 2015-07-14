@@ -1,7 +1,6 @@
 //
 // Created by Hao Xu on 15/5/5.
 //
-
 #include <dji_sdk/dji_services.h>
 #include <dji_sdk/set_local_position_ref.h>
 #include <dji_sdk/set_lookat_local.h>
@@ -10,10 +9,113 @@
 #include <dji_sdk/fly_to_local.h>
 #include <dji_sdk/set_velocity.h>
 #include <dji_sdk/motion_controls.h>
+#include <dji_sdk/app_act.h>
+#include <dji_sdk/open_close.h>
+#include <dji_sdk/dji_variable.h>
 
 namespace service_handles
 {
+    bool open_or_close_cb(
+        dji_sdk::pre_actRequest & req,
+        dji_sdk::pre_actResponse & rep
+    )
+    {
+        int count;
+        if (dji_variable::flag_open_or_close)
+        {
+            ROS_INFO("Try to open");
+        }
+        else 
+        {
+            ROS_INFO("Try to close");
+        }
+        dji_variable::flag_visit = false;
+        dji_variable::flag_success = false;
+        pre_act::ros_nav_open_close();
+        count = 0;
+        while (!dji_variable::flag_visit && count < 10)
+        {
+            ROS_INFO("%d Loop", count);
+            ros::Duration(1.0).sleep();
+            count++;
+        }
+        if (count >= 10)
+        {
+            ROS_INFO("Time out!");
+            rep.result = false;
+            return false;
+        }
+        else 
+        {
+            dji_variable::flag_visit = false;
+            if (dji_variable::flag_success)
+            {
+                ROS_INFO("Successful!");
+                if (dji_variable::flag_open_or_close)
+                {
+                    ROS_INFO("Now open");
+                }
+                else 
+                {
+                    ROS_INFO("Now close");
+                }
+                dji_variable::flag_open_or_close = !dji_variable::flag_open_or_close;
+                dji_variable::flag_success = false;
+                rep.result = true;
+                return true;
+            }
+            else 
+            {
+                ROS_INFO("Fault!");
+                rep.result = false;
+                return false;
+            }
+        }
+    }
 
+    bool app_act_ref_cb(
+        dji_sdk::pre_actRequest & req,
+        dji_sdk::pre_actResponse & rep
+    )
+    {
+        int count;
+        ROS_INFO("Try to activate");
+        dji_variable::flag_visit = false;
+        dji_variable::flag_success = false;
+        pre_act::activation();
+        count = 0;
+        while (!dji_variable::flag_visit && count < 10)
+        {
+            ROS_INFO("%d Loop", count);
+            ros::Duration(1.0).sleep();
+            count++;
+        }
+        if (count >= 10)
+        {
+            ROS_INFO("activation time out!");
+            rep.result = false;
+            return false;
+        }
+        else 
+        {
+            dji_variable::flag_visit = false;
+            if (dji_variable::flag_success)
+            {
+                ROS_INFO("activation successful!");
+                dji_variable::flag_success = false;
+                rep.result = true;
+                return true;
+            }
+            else 
+            {
+                ROS_INFO("activation fault!");
+                rep.result = false;
+                return false;
+            }
+        }
+
+    }
+    
     bool set_local_position_ref_cb(dji_sdk::set_local_position_refRequest &req,
                                 dji_sdk::set_local_position_refResponse &rep
     )
@@ -96,9 +198,20 @@ namespace service_handles
 
     ros::ServiceServer local_pos_ref,lookat_ser,gimbal_angles_ser;
     ros::ServiceServer fly_to_local,set_velocity;
+    ros::ServiceServer app_act_ser, open_close_ser;
 
     int init_services(ros::NodeHandle & n)
     {
+        open_close_ser = n.advertiseService(
+            "open_or_close",
+            open_or_close_cb
+        );
+
+        app_act_ser = n.advertiseService(
+            "app_act_ref",
+            app_act_ref_cb
+        );
+
         local_pos_ref = n.advertiseService(
                 "set_local_position_ref",
                 set_local_position_ref_cb

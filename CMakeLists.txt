@@ -9,7 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
   nav_msgs
   geometry_msgs
-   message_generation
+  message_generation
 )
 
 find_package(PythonLibs "${PYTHON_VERSION_MAJOR}.${PYTHON_VERSION_MINOR}" REQUIRED)
@@ -37,6 +37,8 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
    set_gimbal_angles.srv
    set_velocity.srv
    fly_to_local.srv
+   pre_act.srv
+   open_close.srv
  )
 
 ## Generate actions in the 'action' folder
@@ -87,7 +89,7 @@ add_executable(dji_sdk_node src/dji_sdk_node.cpp
  src/modules/dji_mavlink_adapter.cpp
  src/modules/mavlink_connector.cpp
  src/modules/dji_commands.cpp
- src/modules/dji_waypoints.cpp
+ src/modules/dji_act_open.cpp
  src/modules/dji_waypoints.cpp)
 
 ## Add cmake target dependencies of the executable/library
