@@ -37,7 +37,7 @@ set(CMAKE_CXX_FLAGS "-std=c++11 ${CMAKE_CXX_FLAGS}")
    set_gimbal_angles.srv
    set_velocity.srv
    fly_to_local.srv
-   pre_act.srv
+   app_act.srv
    open_close.srv
  )
 
